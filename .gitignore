@@ -12,3 +12,4 @@ wheels/
 # data and env variables
 .env
 data/
+.DS_Store
