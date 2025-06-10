@@ -25,8 +25,33 @@ def connect_db():
     except Exception as e:
         print("Couldn't connect to Database:", e)
 
-@mcp.resource("schema://{tablename}")
-def get_schema(tablename: str) -> str:
+@mcp.resource("postgres://schema")
+def get_db_schema() -> str:
+    # Get the table schema from the postgres database
+    conn = connect_db()
+    schema_query = """
+                    SELECT table_name from information_schema.tables WHERE table_schema='public';
+                    """
+
+    cur = conn.cursor()
+    cur.execute(schema_query)
+    schema = cur.fetchall()
+    conn.close()
+
+    if not schema:
+        return f"database not found"
+    
+    schema_dict = {
+        "table_name": []
+    }
+
+    for row in schema:
+        schema_dict['table_name'].append(row[0])
+
+    return schema_dict
+
+@mcp.resource("postgres://{tablename}/schema")
+def get_table_schema(tablename: str) -> str:
     # Get the table schema from the postgres database
     conn = connect_db()
     schema_query = """
